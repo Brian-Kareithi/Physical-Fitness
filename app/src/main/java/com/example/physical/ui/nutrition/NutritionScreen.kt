@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +45,7 @@ import com.example.physical.data.FoodData
 import com.example.physical.data.model.FoodSuggestion
 
 @Composable
-fun NutritionScreen() {
+fun NutritionScreen(onOpenDrawer: () -> Unit = {}) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Foods (${FoodData.foods.size})", "Snacks (${FoodData.snacks.size})", "Drinks (${FoodData.drinks.size})")
     val currentList = when (selectedTab) {
@@ -57,6 +59,25 @@ fun NutritionScreen() {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onOpenDrawer) {
+                Text(text = "\u2630", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+            }
+            Text(
+                text = "Kenyan Foods",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.size(48.dp))
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()

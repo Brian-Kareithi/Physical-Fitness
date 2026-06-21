@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.IconButton
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -47,7 +48,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun SleepScreen(viewModel: SleepViewModel, isGuest: Boolean) {
+fun SleepScreen(
+    viewModel: SleepViewModel,
+    isGuest: Boolean,
+    onOpenDrawer: () -> Unit = {}
+) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(isGuest) {
@@ -64,7 +69,7 @@ fun SleepScreen(viewModel: SleepViewModel, isGuest: Boolean) {
             .background(MaterialTheme.colorScheme.background)
     ) {
         if (state.showSuggestion) {
-            RecommendationContent(state = state, viewModel = viewModel, accentColor = accentColor, lightAccent = lightAccent)
+            RecommendationContent(state = state, viewModel = viewModel, accentColor = accentColor, lightAccent = lightAccent, onOpenDrawer = onOpenDrawer)
         } else {
             Column(
                 modifier = Modifier
@@ -74,12 +79,23 @@ fun SleepScreen(viewModel: SleepViewModel, isGuest: Boolean) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "Sleep Schedule",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onOpenDrawer) {
+                        Text(text = "\u2630", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+                    }
+                    Text(
+                        text = "Sleep Schedule",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.size(48.dp))
+                }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -421,7 +437,8 @@ private fun RecommendationContent(
     state: SleepUiState,
     viewModel: SleepViewModel,
     accentColor: Color,
-    lightAccent: Color
+    lightAccent: Color,
+    onOpenDrawer: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -430,7 +447,16 @@ private fun RecommendationContent(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(20.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onOpenDrawer) {
+                Text(text = "\u2630", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
+        Spacer(modifier = Modifier.height(12.dp))
 
         Card(
             modifier = Modifier.fillMaxWidth(),

@@ -24,10 +24,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -35,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -56,12 +54,12 @@ import com.example.physical.ui.sleep.SleepScreen
 import com.example.physical.ui.sleep.SleepViewModel
 import kotlinx.coroutines.launch
 
-sealed class Screen(val route: String, val title: String) {
-    object Home : Screen("home", "Dashboard")
-    object Runs : Screen("runs", "Runs")
-    object Nutrition : Screen("nutrition", "Kenyan Foods")
-    object Sleep : Screen("sleep", "Sleep Schedule")
-    object Progress : Screen("progress", "My Progress")
+sealed class Screen(val route: String, val title: String, val icon: String) {
+    object Home : Screen("home", "Dashboard", "\u2302")
+    object Runs : Screen("runs", "Runs", "\u25B7")
+    object Nutrition : Screen("nutrition", "Kenyan Foods", "\u2615")
+    object Sleep : Screen("sleep", "Sleep Schedule", "\u25CB")
+    object Progress : Screen("progress", "My Progress", "\u2606")
 }
 
 private val drawerItems = listOf(
@@ -71,6 +69,9 @@ private val drawerItems = listOf(
     Screen.Sleep,
     Screen.Progress
 )
+
+fun String.capitalizeFirst(): String =
+    if (isBlank()) this else replaceFirstChar { it.uppercase() }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,7 +84,12 @@ fun AppNavigation(authViewModel: AuthViewModel) {
     val runViewModel: RunViewModel = viewModel()
     val sleepViewModel: SleepViewModel = viewModel()
 
-    val firstName = authState.userName.substringBefore(" ").ifBlank { "User" }
+    val firstName = authState.userName
+        .substringBefore(" ")
+        .ifBlank { "User" }
+        .capitalizeFirst()
+
+    val currentRoute = navController.currentBackStackEntryFlow.collectAsState(initial = null).value?.destination?.route
 
     if (!authState.isLoggedIn) {
         NavHost(
@@ -123,26 +129,45 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Row(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            IconButton(onClick = { scope.launch { drawerState.close() } }) {
-                                Text(
-                                    text = "\u2715",
-                                    fontSize = 20.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                .background(
+                                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                                        colors = listOf(Color(0xFF1B5E20), Color(0xFF388E3C))
+                                    )
                                 )
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Physical",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                IconButton(onClick = { scope.launch { drawerState.close() } }) {
+                                    Text(
+                                        text = "\u2715",
+                                        fontSize = 20.sp,
+                                        color = Color.White.copy(alpha = 0.8f)
+                                    )
+                                }
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         drawerItems.forEach { screen ->
+                            val isSelected = currentRoute == screen.route
                             DrawerItem(
+                                icon = screen.icon,
                                 title = screen.title,
+                                isSelected = isSelected,
                                 onClick = {
                                     scope.launch { drawerState.close() }
                                     navController.navigate(screen.route) {
@@ -156,7 +181,10 @@ fun AppNavigation(authViewModel: AuthViewModel) {
 
                         Spacer(modifier = Modifier.weight(1f))
 
-                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Column(
@@ -174,7 +202,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                 Text(
                                     text = "Signed in as guest",
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             } else {
                                 Text(
@@ -184,9 +212,9 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = authState.userName.ifBlank { firstName },
+                                    text = authState.userName.capitalizeFirst(),
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                 )
                             }
 
@@ -200,13 +228,15 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
-                                    contentColor = MaterialTheme.colorScheme.error
-                                )
+                                    containerColor = Color(0xFFF5F5F5),
+                                    contentColor = Color(0xFF616161)
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                             ) {
                                 Text(
-                                    text = "Logout",
-                                    fontWeight = FontWeight.SemiBold
+                                    text = "Log out",
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 14.sp
                                 )
                             }
                         }
@@ -216,55 +246,44 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                 }
             }
         ) {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = { Text("") },
-                        navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                                Text(text = "\u2630", fontSize = 20.sp)
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route
+            ) {
+                composable(Screen.Home.route) {
+                    HomeScreen(
+                        viewModel = homeViewModel,
+                        userName = authState.userName,
+                        isGuest = authState.isGuest,
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
                     )
                 }
-            ) { innerPadding ->
-                NavHost(
-                    navController = navController,
-                    startDestination = Screen.Home.route,
-                    modifier = Modifier.padding(innerPadding)
-                ) {
-                    composable(Screen.Home.route) {
-                        HomeScreen(
-                            viewModel = homeViewModel,
-                            userName = authState.userName,
-                            isGuest = authState.isGuest
-                        )
-                    }
-                    composable(Screen.Runs.route) {
-                        RunTrackingScreen(
-                            viewModel = runViewModel,
-                            userName = authState.userName,
-                            isGuest = authState.isGuest
-                        )
-                    }
-                    composable(Screen.Nutrition.route) {
-                        NutritionScreen()
-                    }
-                    composable(Screen.Sleep.route) {
-                        SleepScreen(
-                            viewModel = sleepViewModel,
-                            isGuest = authState.isGuest
-                        )
-                    }
-                    composable(Screen.Progress.route) {
-                        ProgressScreen(
-                            userName = authState.userName,
-                            isGuest = authState.isGuest
-                        )
-                    }
+                composable(Screen.Runs.route) {
+                    RunTrackingScreen(
+                        viewModel = runViewModel,
+                        userName = authState.userName,
+                        isGuest = authState.isGuest,
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
+                }
+                composable(Screen.Nutrition.route) {
+                    NutritionScreen(
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
+                }
+                composable(Screen.Sleep.route) {
+                    SleepScreen(
+                        viewModel = sleepViewModel,
+                        isGuest = authState.isGuest,
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
+                }
+                composable(Screen.Progress.route) {
+                    ProgressScreen(
+                        userName = authState.userName,
+                        isGuest = authState.isGuest,
+                        onOpenDrawer = { scope.launch { drawerState.open() } }
+                    )
                 }
             }
         }
@@ -273,17 +292,36 @@ fun AppNavigation(authViewModel: AuthViewModel) {
 
 @Composable
 private fun DrawerItem(
+    icon: String,
     title: String,
+    isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Text(
-        text = title,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Medium,
-        color = MaterialTheme.colorScheme.onSurface,
+    val bgColor = if (isSelected) Color(0xFFE8F5E9) else Color.Transparent
+    val textColor = if (isSelected) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+    val weight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(bgColor)
             .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp, vertical = 14.dp)
-    )
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = icon,
+            fontSize = 18.sp,
+            color = textColor.copy(alpha = if (isSelected) 1f else 0.6f)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = title,
+            fontSize = 15.sp,
+            fontWeight = weight,
+            color = textColor
+        )
+    }
 }

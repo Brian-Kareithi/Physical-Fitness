@@ -2,7 +2,6 @@ package com.example.physical.ui.runs
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +47,8 @@ import java.util.Locale
 fun RunTrackingScreen(
     viewModel: RunViewModel,
     userName: String,
-    isGuest: Boolean
+    isGuest: Boolean,
+    onOpenDrawer: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -65,14 +66,23 @@ fun RunTrackingScreen(
         item { Spacer(modifier = Modifier.height(4.dp)) }
 
         item {
-            Text(
-                text = "Runs",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onOpenDrawer) {
+                    Text(text = "\u2630", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+                }
+                Text(
+                    text = "Runs",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.size(48.dp))
+            }
         }
 
         item {

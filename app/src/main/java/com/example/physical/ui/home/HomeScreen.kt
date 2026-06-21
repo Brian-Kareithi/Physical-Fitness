@@ -1,6 +1,7 @@
 package com.example.physical.ui.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,15 +36,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+fun String.capitalizeFirst(): String =
+    if (isBlank()) this else replaceFirstChar { it.uppercase() }
+
 @Composable
-fun HomeScreen(viewModel: HomeViewModel, userName: String, isGuest: Boolean) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    userName: String,
+    isGuest: Boolean,
+    onOpenDrawer: () -> Unit
+) {
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(userName, isGuest) {
         viewModel.loadData(userName, isGuest)
     }
 
-    val firstName = userName.substringBefore(" ").ifBlank { "Athlete" }
+    val firstName = userName
+        .substringBefore(" ")
+        .ifBlank { "Athlete" }
+        .capitalizeFirst()
 
     Column(
         modifier = Modifier
@@ -58,17 +71,30 @@ fun HomeScreen(viewModel: HomeViewModel, userName: String, isGuest: Boolean) {
                         colors = listOf(Color(0xFF1B5E20), Color(0xFF388E3C), Color(0xFF4CAF50))
                     )
                 )
-                .padding(top = 32.dp, bottom = 28.dp, start = 24.dp, end = 24.dp)
+                .padding(top = 32.dp, bottom = 28.dp, start = 0.dp, end = 24.dp)
         ) {
             Column {
+                IconButton(
+                    onClick = onOpenDrawer,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text(
+                        text = "\u2630",
+                        fontSize = 22.sp,
+                        color = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Welcome back,",
                     fontSize = 15.sp,
-                    color = Color.White.copy(alpha = 0.8f)
+                    color = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.padding(start = 24.dp)
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = firstName,
+                    modifier = Modifier.padding(start = 24.dp),
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -79,14 +105,17 @@ fun HomeScreen(viewModel: HomeViewModel, userName: String, isGuest: Boolean) {
                     Text(
                         text = "Guest mode \u2022 data not saved",
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.padding(start = 24.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     HeaderStat(

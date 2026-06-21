@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -40,7 +42,11 @@ import androidx.core.content.ContextCompat
 import com.example.physical.data.repository.FitnessRepository
 
 @Composable
-fun ProgressScreen(userName: String, isGuest: Boolean) {
+fun ProgressScreen(
+    userName: String,
+    isGuest: Boolean,
+    onOpenDrawer: () -> Unit = {}
+) {
     val context = LocalContext.current
     val repository = remember { FitnessRepository() }
     var totalRuns by remember { mutableStateOf(0) }
@@ -95,14 +101,25 @@ fun ProgressScreen(userName: String, isGuest: Boolean) {
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = "My Progress",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onOpenDrawer) {
+                Text(text = "\u2630", fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+            }
+            Text(
+                text = "My Progress",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.size(48.dp))
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Your running stats at a glance",
