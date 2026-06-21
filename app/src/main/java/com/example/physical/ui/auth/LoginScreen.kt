@@ -191,7 +191,7 @@ fun LoginScreen(
 
         Text(
             text = "Continue without account",
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
             fontSize = 13.sp,
             modifier = Modifier.clickable { showGuestWarning = true }
         )

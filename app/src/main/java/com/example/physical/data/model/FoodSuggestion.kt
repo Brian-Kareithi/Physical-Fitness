@@ -5,5 +5,7 @@ data class FoodSuggestion(
     val description: String,
     val nutrients: String,
     val benefits: String,
-    val emoji: String
+    val emoji: String,
+    val category: String,
+    val preparation: String
 )

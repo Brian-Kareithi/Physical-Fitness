@@ -178,7 +178,7 @@ fun RunTrackingScreen(
                 Text(
                     text = "No runs logged yet. Start your fitness journey!",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f),
                     modifier = Modifier.padding(vertical = 20.dp)
                 )
             }
@@ -228,7 +228,7 @@ private fun RunCard(run: Run) {
             Text(
                 text = dateFormat.format(Date(run.date)),
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
             )
         }
     }

@@ -150,7 +150,7 @@ fun ProgressScreen(userName: String, isGuest: Boolean) {
             Text(
                 text = "Loading...",
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.65f)
             )
         }
 

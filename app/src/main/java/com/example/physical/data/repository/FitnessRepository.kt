@@ -1,6 +1,5 @@
 package com.example.physical.data.repository
 
-import com.example.physical.data.model.FoodSuggestion
 import com.example.physical.data.model.Run
 import com.example.physical.data.model.SleepSchedule
 import com.google.firebase.auth.FirebaseAuth
@@ -106,78 +105,5 @@ class FitnessRepository {
         }
     }
 
-    companion object {
-        val kenyanFoods = listOf(
-            FoodSuggestion(
-                name = "Ugali",
-                description = "Stiff maize meal porridge, Kenya's staple food. Pairs perfectly with sukuma wiki or nyama choma.",
-                nutrients = "Carbs (37g), Fiber (2g), Iron (1.5mg), B-Vitamins",
-                benefits = "Sustained energy release, affordable, filling. Great pre-run fuel.",
-                emoji = "\uD83C\uDF3E"
-            ),
-            FoodSuggestion(
-                name = "Sukuma Wiki",
-                description = "Collard greens sauteed with onions and tomatoes. The name means 'push the week' - it's affordable and stretches meals.",
-                nutrients = "Vitamin A (206%), Vit C (134%), Iron (8%), Calcium (14%), Fiber (3g)",
-                benefits = "Boosts immunity, strengthens bones, aids muscle recovery.",
-                emoji = "\uD83E\uDD66"
-            ),
-            FoodSuggestion(
-                name = "Nyama Choma",
-                description = "Traditional roasted goat or beef. Kenya's favorite weekend meal, often enjoyed with family and friends.",
-                nutrients = "Protein (26g), Iron (15%), Zinc (35%), B12 (38%)",
-                benefits = "Builds muscle, repairs tissue, boosts testosterone for better workouts.",
-                emoji = "\uD83C\uDF56"
-            ),
-            FoodSuggestion(
-                name = "Githeri",
-                description = "Hearty mix of boiled maize and beans. A complete protein source popular in central Kenya.",
-                nutrients = "Protein (15g), Fiber (12g), Iron (20%), Folate (28%)",
-                benefits = "Complete protein (rice+beans combo), steady glucose, great for meal prep.",
-                emoji = "\uD83E\uDDCA"
-            ),
-            FoodSuggestion(
-                name = "Omena",
-                description = "Small silver dried fish, typically served in a stew with tomatoes. Affordable protein for coastal communities.",
-                nutrients = "Calcium (40%), Protein (20g), Omega-3 (1.2g), Iron (25%)",
-                benefits = "Strengthens joints, anti-inflammatory, supports cardiovascular health.",
-                emoji = "\uD83D\uDC1F"
-            ),
-            FoodSuggestion(
-                name = "Matoke",
-                description = "Green bananas boiled or mashed. A staple in western Kenya, naturally alkaline and easy to digest.",
-                nutrients = "Potassium (22%), Vit C (20%), Fiber (4g), Magnesium (12%)",
-                benefits = "Electrolyte replenishment, prevents cramps, gentle on stomach.",
-                emoji = "\uD83C\uDF4C"
-            ),
-            FoodSuggestion(
-                name = "Mursik",
-                description = "Fermented milk in traditional gourd. A Kalenjin delicacy rich in probiotics.",
-                nutrients = "Probiotics, Calcium (28%), Protein (8g), Vitamin D (15%)",
-                benefits = "Gut health, stronger bones, improved digestion and nutrient absorption.",
-                emoji = "\uD83E\uDD5B"
-            ),
-            FoodSuggestion(
-                name = "Mukimo",
-                description = "Mashed potatoes mixed with pumpkin leaves, maize, and onions. A hearty central Kenya meal.",
-                nutrients = "Carbs (45g), Vit A (35%), Iron (10%), Fiber (5g)",
-                benefits = "Post-workout carb replenishment, vitamin-rich, satisfying.",
-                emoji = "\uD83E\uDD54"
-            ),
-            FoodSuggestion(
-                name = "Fish from Lake Victoria",
-                description = "Fresh tilapia or Nile perch, often fried or grilled. World-class freshwater fish.",
-                nutrients = "Omega-3 (1.5g), Protein (23g), Selenium (45%), B12 (30%)",
-                benefits = "Brain health, reduces inflammation, muscle repair, thyroid function.",
-                emoji = "\uD83D\uDC20"
-            ),
-            FoodSuggestion(
-                name = "Kachumbari",
-                description = "Fresh tomato and onion salsa with coriander and lemon juice. The perfect side for any Kenyan meal.",
-                nutrients = "Vit C (40%), Antioxidants, Lycopene, Fiber (2g), Zero fat",
-                benefits = "Hydration, immune boost, aids digestion, low-calorie nutrient bomb.",
-                emoji = "\uD83C\uDF45"
-            )
-        )
-    }
+    companion object {}
 }

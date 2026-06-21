@@ -1,6 +1,10 @@
 package com.example.physical.ui.nutrition
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,62 +21,115 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.physical.data.FoodData
 import com.example.physical.data.model.FoodSuggestion
-import com.example.physical.data.repository.FitnessRepository
 
 @Composable
 fun NutritionScreen() {
-    val foods = FitnessRepository.kenyanFoods
+    var selectedTab by remember { mutableIntStateOf(0) }
+    val tabs = listOf("Foods (${FoodData.foods.size})", "Snacks (${FoodData.snacks.size})", "Drinks (${FoodData.drinks.size})")
+    val currentList = when (selectedTab) {
+        1 -> FoodData.snacks
+        2 -> FoodData.drinks
+        else -> FoodData.foods
+    }
 
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        item {
-            Text(text = "\uD83C\uDF4D", fontSize = 48.sp)
-            Spacer(modifier = Modifier.height(8.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp)
+        ) {
             Text(
-                text = "Kenyan Superfoods",
-                fontSize = 22.sp,
+                text = "Kenyan Nutrition",
+                fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Nutrient-rich traditional Kenyan foods to fuel your fitness",
+                text = "${FoodData.allFoods.size} meals, snacks & drinks with prep guides",
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
-            Spacer(modifier = Modifier.height(12.dp))
         }
 
-        items(foods) { food ->
-            FoodCard(food = food)
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = Color(0xFF2E7D32),
+            indicator = { tabPositions ->
+                TabRowDefaults.SecondaryIndicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                    color = Color(0xFF2E7D32)
+                )
+            }
+        ) {
+            tabs.forEachIndexed { index, label ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = {
+                        Text(
+                            text = label,
+                            fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Medium,
+                            fontSize = 13.sp,
+                            color = if (selectedTab == index) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+                )
+            }
         }
 
-        item {
-            Spacer(modifier = Modifier.height(20.dp))
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            item { Spacer(modifier = Modifier.height(6.dp)) }
+
+            items(currentList) { food ->
+                FoodCard(food = food)
+            }
+
+            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }
 
 @Composable
 private fun FoodCard(food: FoodSuggestion) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = !expanded },
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (expanded) 4.dp else 1.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(
@@ -81,35 +138,72 @@ private fun FoodCard(food: FoodSuggestion) {
                 .padding(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = food.emoji, fontSize = 32.sp)
+                Text(text = food.emoji, fontSize = 28.sp)
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = food.name,
-                        fontSize = 18.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = food.description,
                         fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                        lineHeight = 18.sp
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
+                        lineHeight = 18.sp,
+                        maxLines = if (expanded) Int.MAX_VALUE else 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            Row {
-                Tag(text = "Nutrients: ${food.nutrients}", color = Color(0xFF2196F3))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Tag(text = food.nutrients, color = Color(0xFF1565C0))
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row {
-                Tag(text = "Benefit: ${food.benefits}", color = Color(0xFF2E7D32))
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column {
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Tag(text = "\u2728 ${food.benefits}", color = Color(0xFF2E7D32))
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Card(
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(
+                                text = "How to Prepare",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF424242)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = food.preparation,
+                                fontSize = 13.sp,
+                                color = Color(0xFF616161),
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
+                }
             }
+
+            Text(
+                text = if (expanded) "Tap to collapse \u25B2" else "Tap for details \u25BC",
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
         }
     }
 }
@@ -125,6 +219,9 @@ private fun Tag(text: String, color: Color) {
             fontSize = 12.sp,
             color = color,
             fontWeight = FontWeight.Medium,
+            lineHeight = 16.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         )
     }

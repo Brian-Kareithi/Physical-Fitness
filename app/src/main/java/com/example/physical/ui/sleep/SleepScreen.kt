@@ -106,7 +106,7 @@ fun SleepScreen(viewModel: SleepViewModel, isGuest: Boolean) {
                 Text(
                     text = "Step ${state.step} of 5",
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -184,7 +184,7 @@ private fun DaysPerWeekStep(state: SleepUiState, viewModel: SleepViewModel) {
                     )
                     .border(
                         width = if (isSelected) 0.dp else 1.dp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
                         shape = CircleShape
                     )
                     .clickable { viewModel.updateDaysPerWeek(day) },
@@ -251,8 +251,8 @@ private fun HoursPerDayStep(state: SleepUiState, viewModel: SleepViewModel) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("1h", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
-        Text("16h", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        Text("1h", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        Text("16h", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
     }
 }
 
@@ -321,7 +321,7 @@ private fun CommuteStep(state: SleepUiState, viewModel: SleepViewModel) {
     Text(
         text = "One-way in minutes",
         fontSize = 14.sp,
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
     )
 
     Spacer(modifier = Modifier.height(20.dp))
@@ -354,8 +354,8 @@ private fun CommuteStep(state: SleepUiState, viewModel: SleepViewModel) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("0 min", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
-        Text("4 hrs", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f))
+        Text("0 min", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+        Text("4 hrs", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
     }
 
     val joke = viewModel.commuteJoke()

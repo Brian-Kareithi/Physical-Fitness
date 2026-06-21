@@ -145,7 +145,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                             text = "Menu",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
                             letterSpacing = 2.sp,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                         )
@@ -186,7 +186,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                 Text(
                                     text = "Signed in as guest",
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
                                 )
                             } else {
                                 Text(
@@ -198,7 +198,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                 Text(
                                     text = authState.userName.ifBlank { firstName },
                                     fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
                                 )
                             }
 
