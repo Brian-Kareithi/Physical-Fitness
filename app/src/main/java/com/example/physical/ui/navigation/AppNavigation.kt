@@ -57,9 +57,8 @@ import com.example.physical.ui.sleep.SleepViewModel
 import kotlinx.coroutines.launch
 
 sealed class Screen(val route: String, val title: String) {
-    object Home : Screen("home", "Home")
-    object MorningRuns : Screen("morning_runs", "Morning Runs")
-    object EveningRuns : Screen("evening_runs", "Evening Runs")
+    object Home : Screen("home", "Dashboard")
+    object Runs : Screen("runs", "Runs")
     object Nutrition : Screen("nutrition", "Kenyan Foods")
     object Sleep : Screen("sleep", "Sleep Schedule")
     object Progress : Screen("progress", "My Progress")
@@ -67,8 +66,7 @@ sealed class Screen(val route: String, val title: String) {
 
 private val drawerItems = listOf(
     Screen.Home,
-    Screen.MorningRuns,
-    Screen.EveningRuns,
+    Screen.Runs,
     Screen.Nutrition,
     Screen.Sleep,
     Screen.Progress
@@ -82,8 +80,7 @@ fun AppNavigation(authViewModel: AuthViewModel) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val homeViewModel: HomeViewModel = viewModel()
-    val morningRunViewModel: RunViewModel = viewModel()
-    val eveningRunViewModel: RunViewModel = viewModel()
+    val runViewModel: RunViewModel = viewModel()
     val sleepViewModel: SleepViewModel = viewModel()
 
     val firstName = authState.userName.substringBefore(" ").ifBlank { "User" }
@@ -140,15 +137,6 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                 )
                             }
                         }
-
-                        Text(
-                            text = "Menu",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f),
-                            letterSpacing = 2.sp,
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
-                        )
 
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -255,22 +243,9 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                             isGuest = authState.isGuest
                         )
                     }
-                    composable(Screen.MorningRuns.route) {
+                    composable(Screen.Runs.route) {
                         RunTrackingScreen(
-                            viewModel = morningRunViewModel,
-                            runType = "morning",
-                            title = "Morning Runs",
-                            color = Color(0xFFFF9800),
-                            userName = authState.userName,
-                            isGuest = authState.isGuest
-                        )
-                    }
-                    composable(Screen.EveningRuns.route) {
-                        RunTrackingScreen(
-                            viewModel = eveningRunViewModel,
-                            runType = "evening",
-                            title = "Evening Runs",
-                            color = Color(0xFF1565C0),
+                            viewModel = runViewModel,
                             userName = authState.userName,
                             isGuest = authState.isGuest
                         )

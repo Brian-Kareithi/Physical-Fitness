@@ -15,11 +15,15 @@ import kotlinx.coroutines.launch
 data class HomeUiState(
     val userName: String = "",
     val isGuest: Boolean = false,
-    val todayMorningRun: Run? = null,
-    val todayEveningRun: Run? = null,
+    val todayRuns: Int = 0,
+    val todayDistance: Double = 0.0,
     val weeklyRuns: Int = 0,
     val weeklyDistance: Double = 0.0,
     val weeklyDuration: Long = 0,
+    val totalRuns: Int = 0,
+    val totalDistance: Double = 0.0,
+    val bestDistance: Double = 0.0,
+    val avgPace: String = "--",
     val activityData: ActivityData = ActivityData()
 )
 
@@ -61,12 +65,24 @@ class HomeViewModel : ViewModel() {
                 val weekAgo = System.currentTimeMillis() - 7 * 86400000
                 val weekRuns = runs.filter { it.date >= weekAgo }
 
+                val totalDistance = runs.sumOf { it.distance }
+                val best = runs.maxOfOrNull { it.distance } ?: 0.0
+                val avgPace = if (runs.isNotEmpty()) {
+                    val totalMin = runs.sumOf { it.duration }
+                    val pace = if (totalDistance > 0) totalMin.toDouble() / totalDistance else 0.0
+                    if (pace > 0) String.format("%.1f", pace) else "--"
+                } else "--"
+
                 _uiState.value = _uiState.value.copy(
-                    todayMorningRun = todayRuns.find { it.type == "morning" },
-                    todayEveningRun = todayRuns.find { it.type == "evening" },
+                    todayRuns = todayRuns.size,
+                    todayDistance = todayRuns.sumOf { it.distance },
                     weeklyRuns = weekRuns.size,
                     weeklyDistance = weekRuns.sumOf { it.distance },
-                    weeklyDuration = weekRuns.sumOf { it.duration }
+                    weeklyDuration = weekRuns.sumOf { it.duration },
+                    totalRuns = runs.size,
+                    totalDistance = totalDistance,
+                    bestDistance = best,
+                    avgPace = avgPace
                 )
             }
         }

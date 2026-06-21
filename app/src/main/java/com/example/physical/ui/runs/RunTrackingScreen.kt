@@ -1,5 +1,6 @@
 package com.example.physical.ui.runs
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,16 +46,13 @@ import java.util.Locale
 @Composable
 fun RunTrackingScreen(
     viewModel: RunViewModel,
-    runType: String,
-    title: String,
-    color: Color,
     userName: String,
     isGuest: Boolean
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(runType, isGuest) {
-        viewModel.loadData(runType, isGuest)
+    LaunchedEffect(isGuest) {
+        viewModel.loadData(isGuest)
     }
 
     LazyColumn(
@@ -68,7 +66,7 @@ fun RunTrackingScreen(
 
         item {
             Text(
-                text = title,
+                text = "Runs",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -79,9 +77,9 @@ fun RunTrackingScreen(
 
         item {
             if (state.isTracking || state.isPaused) {
-                TrackingCard(state = state, viewModel = viewModel, runType = runType, color = color)
+                TrackingCard(state = state, viewModel = viewModel)
             } else {
-                StartCard(state = state, viewModel = viewModel, runType = runType, color = color)
+                StartCard(state = state, viewModel = viewModel)
             }
         }
 
@@ -131,12 +129,11 @@ fun RunTrackingScreen(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 private fun TrackingCard(
     state: RunUiState,
-    viewModel: RunViewModel,
-    runType: String,
-    color: Color
+    viewModel: RunViewModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -200,7 +197,7 @@ private fun TrackingCard(
                 ControlButton(
                     text = "Stop",
                     color = Color(0xFFE53935),
-                    onClick = { viewModel.stopRun(runType) }
+                    onClick = { viewModel.stopRun() }
                 )
             }
 
@@ -220,9 +217,7 @@ private fun TrackingCard(
 @Composable
 private fun StartCard(
     state: RunUiState,
-    viewModel: RunViewModel,
-    runType: String,
-    color: Color
+    viewModel: RunViewModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -259,7 +254,7 @@ private fun StartCard(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
-                    .background(color)
+                    .background(Color(0xFF2E7D32))
                     .clickable { viewModel.startRun() },
                 contentAlignment = Alignment.Center
             ) {
@@ -334,8 +329,6 @@ private fun SuggestedRouteCard(route: SuggestedRoute, onStart: () -> Unit) {
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(text = route.icon, fontSize = 28.sp)
-            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = "${route.name} \u2022 ${String.format("%.0f", route.distanceKm)}km",

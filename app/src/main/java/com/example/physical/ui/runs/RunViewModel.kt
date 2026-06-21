@@ -33,10 +33,10 @@ class RunViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(RunUiState())
     val uiState: StateFlow<RunUiState> = _uiState.asStateFlow()
 
-    fun loadData(runType: String, isGuest: Boolean) {
-        _uiState.value = _uiState.value.copy(isGuest = isGuest, suggestedRoutes = emptyList())
+    fun loadData(isGuest: Boolean) {
+        _uiState.value = _uiState.value.copy(isGuest = isGuest)
         if (!isGuest) {
-            loadRuns(runType)
+            loadRuns()
         }
         loadHomeData()
         observeTracking()
@@ -66,10 +66,10 @@ class RunViewModel : ViewModel() {
         )
     }
 
-    private fun loadRuns(type: String) {
+    private fun loadRuns() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
-            val result = repository.getRuns(type)
+            val result = repository.getRuns()
             result.onSuccess { runs ->
                 _uiState.value = _uiState.value.copy(runs = runs, isLoading = false)
             }.onFailure {
@@ -94,7 +94,7 @@ class RunViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(isPaused = false)
     }
 
-    fun stopRun(runType: String) {
+    fun stopRun() {
         val result = RunTracker.instance?.stopRun() ?: return
         val distance = String.format("%.2f", result.distanceKm).toDouble()
         val duration = result.durationSeconds / 60
@@ -111,7 +111,6 @@ class RunViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             val run = Run(
-                type = runType,
                 distance = distance,
                 duration = if (duration < 1) 1 else duration
             )
@@ -123,7 +122,7 @@ class RunViewModel : ViewModel() {
                     isTracking = false,
                     isPaused = false
                 )
-                loadRuns(runType)
+                loadRuns()
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -141,9 +140,5 @@ class RunViewModel : ViewModel() {
         val s = seconds % 60
         return if (h > 0) String.format("%d:%02d:%02d", h, m, s)
         else String.format("%02d:%02d", m, s)
-    }
-
-    fun clearSaveSuccess() {
-        _uiState.value = _uiState.value.copy(saveSuccess = false)
     }
 }
