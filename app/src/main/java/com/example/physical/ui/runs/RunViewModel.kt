@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.physical.data.model.Run
 import com.example.physical.data.repository.FitnessRepository
+import com.example.physical.data.repository.HomeLocationManager
+import com.example.physical.data.repository.RunTracker
+import com.example.physical.data.repository.SuggestedRoute
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,10 +16,15 @@ data class RunUiState(
     val runs: List<Run> = emptyList(),
     val isGuest: Boolean = false,
     val isLoading: Boolean = false,
-    val distanceInput: String = "",
-    val durationInput: String = "",
+    val isTracking: Boolean = false,
+    val isPaused: Boolean = false,
+    val elapsedSeconds: Long = 0,
+    val distanceKm: Double = 0.0,
+    val pace: String = "--",
     val saveSuccess: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val suggestedRoutes: List<SuggestedRoute> = emptyList(),
+    val homeAddress: String? = null
 )
 
 class RunViewModel : ViewModel() {
@@ -25,39 +33,77 @@ class RunViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(RunUiState())
     val uiState: StateFlow<RunUiState> = _uiState.asStateFlow()
 
-    fun loadRuns(type: String, isGuest: Boolean) {
-        _uiState.value = _uiState.value.copy(isGuest = isGuest)
+    fun loadData(runType: String, isGuest: Boolean) {
+        _uiState.value = _uiState.value.copy(isGuest = isGuest, suggestedRoutes = emptyList())
         if (!isGuest) {
-            viewModelScope.launch {
-                _uiState.value = _uiState.value.copy(isLoading = true)
-                val result = repository.getRuns(type)
-                result.onSuccess { runs ->
-                    _uiState.value = _uiState.value.copy(runs = runs, isLoading = false)
-                }.onFailure {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                }
+            loadRuns(runType)
+        }
+        loadHomeData()
+        observeTracking()
+    }
+
+    private fun observeTracking() {
+        val tracker = RunTracker.instance ?: return
+        viewModelScope.launch {
+            tracker.trackingState.collect { state ->
+                _uiState.value = _uiState.value.copy(
+                    isTracking = state.isRunning,
+                    elapsedSeconds = state.elapsedSeconds,
+                    distanceKm = state.distanceKm,
+                    pace = state.paceMinPerKm
+                )
             }
         }
     }
 
-    fun updateDistance(value: String) {
-        _uiState.value = _uiState.value.copy(distanceInput = value, saveSuccess = false)
+    private fun loadHomeData() {
+        val homeManager = HomeLocationManager.instance
+        val address = homeManager?.getHomeAddress()
+        val routes = homeManager?.getSuggestedRoutes() ?: emptyList()
+        _uiState.value = _uiState.value.copy(
+            homeAddress = address,
+            suggestedRoutes = routes
+        )
     }
 
-    fun updateDuration(value: String) {
-        _uiState.value = _uiState.value.copy(durationInput = value, saveSuccess = false)
+    private fun loadRuns(type: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            val result = repository.getRuns(type)
+            result.onSuccess { runs ->
+                _uiState.value = _uiState.value.copy(runs = runs, isLoading = false)
+            }.onFailure {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
     }
 
-    fun saveRun(type: String) {
-        val distance = _uiState.value.distanceInput.toDoubleOrNull() ?: return
-        val duration = _uiState.value.durationInput.toLongOrNull() ?: return
-        if (distance <= 0 || duration <= 0) return
+    fun startRun() {
+        val tracker = RunTracker.instance ?: return
+        tracker.startRun()
+        _uiState.value = _uiState.value.copy(isPaused = false, saveSuccess = false)
+    }
+
+    fun pauseRun() {
+        RunTracker.instance?.pauseRun()
+        _uiState.value = _uiState.value.copy(isPaused = true)
+    }
+
+    fun resumeRun() {
+        RunTracker.instance?.resumeRun()
+        _uiState.value = _uiState.value.copy(isPaused = false)
+    }
+
+    fun stopRun(runType: String) {
+        val result = RunTracker.instance?.stopRun() ?: return
+        val distance = String.format("%.2f", result.distanceKm).toDouble()
+        val duration = result.durationSeconds / 60
 
         if (_uiState.value.isGuest) {
             _uiState.value = _uiState.value.copy(
                 saveSuccess = true,
-                distanceInput = "",
-                durationInput = ""
+                isTracking = false,
+                isPaused = false
             )
             return
         }
@@ -65,26 +111,36 @@ class RunViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             val run = Run(
-                type = type,
+                type = runType,
                 distance = distance,
-                duration = duration
+                duration = if (duration < 1) 1 else duration
             )
-            val result = repository.saveRun(run)
-            result.onSuccess {
+            val saveResult = repository.saveRun(run)
+            saveResult.onSuccess {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     saveSuccess = true,
-                    distanceInput = "",
-                    durationInput = ""
+                    isTracking = false,
+                    isPaused = false
                 )
-                loadRuns(type, false)
+                loadRuns(runType)
             }.onFailure { e ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = e.message
+                    error = e.message,
+                    isTracking = false,
+                    isPaused = false
                 )
             }
         }
+    }
+
+    fun formatTime(seconds: Long): String {
+        val h = seconds / 3600
+        val m = (seconds % 3600) / 60
+        val s = seconds % 60
+        return if (h > 0) String.format("%d:%02d:%02d", h, m, s)
+        else String.format("%02d:%02d", m, s)
     }
 
     fun clearSaveSuccess() {

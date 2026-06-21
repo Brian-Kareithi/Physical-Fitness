@@ -14,6 +14,8 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.physical.data.repository.ActivityTracker
+import com.example.physical.data.repository.HomeLocationManager
+import com.example.physical.data.repository.RunTracker
 import com.example.physical.ui.auth.AuthViewModel
 import com.example.physical.ui.navigation.AppNavigation
 import com.example.physical.ui.splash.SplashScreen
@@ -26,6 +28,7 @@ class MainActivity : ComponentActivity() {
     ) { permissions ->
         if (permissions.values.all { it }) {
             startTracking()
+            detectHome()
         }
     }
 
@@ -34,6 +37,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         ActivityTracker.instance = ActivityTracker(this)
+        RunTracker.instance = RunTracker(this)
+        HomeLocationManager.instance = HomeLocationManager(this)
         requestPermissions()
 
         setContent {
@@ -54,6 +59,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         if (hasPermissions()) {
             startTracking()
+            detectHome()
         }
     }
 
@@ -64,7 +70,8 @@ class MainActivity : ComponentActivity() {
 
     private fun requestPermissions() {
         val permissions = mutableListOf(
-            Manifest.permission.ACTIVITY_RECOGNITION
+            Manifest.permission.ACTIVITY_RECOGNITION,
+            Manifest.permission.ACCESS_FINE_LOCATION
         )
         val needed = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
@@ -86,5 +93,9 @@ class MainActivity : ComponentActivity() {
 
     private fun stopTracking() {
         ActivityTracker.instance?.stopTracking()
+    }
+
+    private fun detectHome() {
+        HomeLocationManager.instance?.detectHome { /* address detected */ }
     }
 }

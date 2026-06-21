@@ -260,7 +260,6 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                             viewModel = morningRunViewModel,
                             runType = "morning",
                             title = "Morning Runs",
-                            emoji = "\uD83C\uDF05",
                             color = Color(0xFFFF9800),
                             userName = authState.userName,
                             isGuest = authState.isGuest
@@ -271,7 +270,6 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                             viewModel = eveningRunViewModel,
                             runType = "evening",
                             title = "Evening Runs",
-                            emoji = "\uD83C\uDF19",
                             color = Color(0xFF1565C0),
                             userName = authState.userName,
                             isGuest = authState.isGuest
