@@ -293,7 +293,7 @@ fun SleepScreen(viewModel: SleepViewModel, isGuest: Boolean) {
 private fun TimeSelector(
     label: String,
     value: Int,
-    range: IntRange,
+    range: IntProgression,
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {

@@ -79,7 +79,7 @@ private val drawerItems = listOf(
 fun AppNavigation(authViewModel: AuthViewModel) {
     val authState by authViewModel.uiState.collectAsState()
     val navController = rememberNavController()
-    val drawerState = rememberDrawerState()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     val homeViewModel: HomeViewModel = viewModel()
     val morningRunViewModel: RunViewModel = viewModel()

@@ -61,7 +61,7 @@ fun SignUpScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "\uD83D\uDCA�",
+            text = "\uD83D\uDCAA",
             fontSize = 48.sp
         )
 
