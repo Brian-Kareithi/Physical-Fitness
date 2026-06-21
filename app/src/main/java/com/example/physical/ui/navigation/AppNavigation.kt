@@ -3,6 +3,7 @@ package com.example.physical.ui.navigation
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DrawerDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -35,7 +36,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,13 +56,13 @@ import com.example.physical.ui.sleep.SleepScreen
 import com.example.physical.ui.sleep.SleepViewModel
 import kotlinx.coroutines.launch
 
-sealed class Screen(val route: String, val title: String, val emoji: String) {
-    object Home : Screen("home", "Home", "\uD83C\uDFE0")
-    object MorningRuns : Screen("morning_runs", "Morning Runs", "\uD83C\uDF05")
-    object EveningRuns : Screen("evening_runs", "Evening Runs", "\uD83C\uDF07")
-    object Nutrition : Screen("nutrition", "Kenyan Foods", "\uD83C\uDF4D")
-    object Sleep : Screen("sleep", "Sleep Schedule", "\uD83D\uDCA4")
-    object Progress : Screen("progress", "My Progress", "\uD83D\uDCCA")
+sealed class Screen(val route: String, val title: String) {
+    object Home : Screen("home", "Home")
+    object MorningRuns : Screen("morning_runs", "Morning Runs")
+    object EveningRuns : Screen("evening_runs", "Evening Runs")
+    object Nutrition : Screen("nutrition", "Kenyan Foods")
+    object Sleep : Screen("sleep", "Sleep Schedule")
+    object Progress : Screen("progress", "My Progress")
 }
 
 private val drawerItems = listOf(
@@ -85,6 +85,8 @@ fun AppNavigation(authViewModel: AuthViewModel) {
     val morningRunViewModel: RunViewModel = viewModel()
     val eveningRunViewModel: RunViewModel = viewModel()
     val sleepViewModel: SleepViewModel = viewModel()
+
+    val firstName = authState.userName.substringBefore(" ").ifBlank { "User" }
 
     if (!authState.isLoggedIn) {
         NavHost(
@@ -122,41 +124,36 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                     drawerContainerColor = MaterialTheme.colorScheme.surface
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(20.dp)
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Spacer(modifier = Modifier.height(40.dp))
-
-                        Text(
-                            text = "\uD83C\uDFC3",
-                            fontSize = 48.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = authState.userName.ifBlank { "Fitness App" },
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-
-                        if (authState.isGuest) {
-                            Text(
-                                text = "Guest Mode",
-                                fontSize = 13.sp,
-                                color = Color(0xFFFF9800)
-                            )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            IconButton(onClick = { scope.launch { drawerState.close() } }) {
+                                Text(
+                                    text = "\u2715",
+                                    fontSize = 20.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                )
+                            }
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Menu",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                            letterSpacing = 2.sp,
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
 
                         drawerItems.forEach { screen ->
                             DrawerItem(
-                                emoji = screen.emoji,
                                 title = screen.title,
                                 onClick = {
                                     scope.launch { drawerState.close() }
@@ -167,23 +164,66 @@ fun AppNavigation(authViewModel: AuthViewModel) {
                                     }
                                 }
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
                         }
 
                         Spacer(modifier = Modifier.weight(1f))
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
 
-                        DrawerItem(
-                            emoji = "\uD83D\uDEAA",
-                            title = "Logout",
-                            onClick = {
-                                scope.launch { drawerState.close() }
-                                authViewModel.logout()
+                        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 20.dp)
+                        ) {
+                            if (authState.isGuest) {
+                                Text(
+                                    text = "Guest",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "Signed in as guest",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            } else {
+                                Text(
+                                    text = firstName,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = authState.userName.ifBlank { firstName },
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
                             }
-                        )
 
-                        Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    authViewModel.logout()
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error.copy(alpha = 0.1f),
+                                    contentColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Text(
+                                    text = "Logout",
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
             }
@@ -260,24 +300,17 @@ fun AppNavigation(authViewModel: AuthViewModel) {
 
 @Composable
 private fun DrawerItem(
-    emoji: String,
     title: String,
     onClick: () -> Unit
 ) {
-    Row(
+    Text(
+        text = title,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 12.dp, horizontal = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = emoji, fontSize = 22.sp)
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
+            .padding(horizontal = 24.dp, vertical = 14.dp)
+    )
 }

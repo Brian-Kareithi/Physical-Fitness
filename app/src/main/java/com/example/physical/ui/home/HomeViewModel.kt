@@ -2,11 +2,14 @@ package com.example.physical.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.physical.data.model.ActivityData
 import com.example.physical.data.model.Run
+import com.example.physical.data.repository.ActivityTracker
 import com.example.physical.data.repository.FitnessRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 data class HomeUiState(
@@ -16,7 +19,8 @@ data class HomeUiState(
     val todayEveningRun: Run? = null,
     val weeklyRuns: Int = 0,
     val weeklyDistance: Double = 0.0,
-    val weeklyDuration: Long = 0
+    val weeklyDuration: Long = 0,
+    val activityData: ActivityData = ActivityData()
 )
 
 class HomeViewModel : ViewModel() {
@@ -24,6 +28,14 @@ class HomeViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            ActivityTracker.instance?.activityData?.collectLatest { data ->
+                _uiState.value = _uiState.value.copy(activityData = data)
+            }
+        }
+    }
 
     fun loadData(userName: String, isGuest: Boolean) {
         _uiState.value = _uiState.value.copy(userName = userName, isGuest = isGuest)
@@ -45,7 +57,6 @@ class HomeViewModel : ViewModel() {
                 }.timeInMillis
 
                 val todayEnd = todayStart + 86400000
-
                 val todayRuns = runs.filter { it.date in todayStart until todayEnd }
                 val weekAgo = System.currentTimeMillis() - 7 * 86400000
                 val weekRuns = runs.filter { it.date >= weekAgo }

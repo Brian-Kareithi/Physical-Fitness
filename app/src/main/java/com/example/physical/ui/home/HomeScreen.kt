@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -68,7 +66,40 @@ fun HomeScreen(viewModel: HomeViewModel, userName: String, isGuest: Boolean) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "TODAY",
+            text = "ACTIVITY TODAY",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color(0xFF2E7D32),
+            letterSpacing = 4.sp
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            ActivityCard(
+                modifier = Modifier.weight(1f),
+                value = "${state.activityData.steps}",
+                label = "Steps"
+            )
+            ActivityCard(
+                modifier = Modifier.weight(1f),
+                value = "${state.activityData.walkingMinutes} min",
+                label = "Walking"
+            )
+            ActivityCard(
+                modifier = Modifier.weight(1f),
+                value = "${state.activityData.vehicleMinutes} min",
+                label = "In Vehicle"
+            )
+        }
+
+        Spacer(modifier = Modifier.height(28.dp))
+
+        Text(
+            text = "RUNS TODAY",
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = Color(0xFF2E7D32),
@@ -83,16 +114,14 @@ fun HomeScreen(viewModel: HomeViewModel, userName: String, isGuest: Boolean) {
         ) {
             TodayCard(
                 modifier = Modifier.weight(1f),
-                emoji = "\uD83C\uDF05",
-                title = "Morning Run",
-                status = if (state.todayMorningRun != null) "Done!" else "Pending",
+                title = "Morning",
+                status = if (state.todayMorningRun != null) "Done" else "Pending",
                 statusColor = if (state.todayMorningRun != null) Color(0xFF4CAF50) else Color(0xFF9E9E9E)
             )
             TodayCard(
                 modifier = Modifier.weight(1f),
-                emoji = "\uD83C\uDF07",
-                title = "Evening Run",
-                status = if (state.todayEveningRun != null) "Done!" else "Pending",
+                title = "Evening",
+                status = if (state.todayEveningRun != null) "Done" else "Pending",
                 statusColor = if (state.todayEveningRun != null) Color(0xFF4CAF50) else Color(0xFF9E9E9E)
             )
         }
@@ -150,9 +179,42 @@ fun HomeScreen(viewModel: HomeViewModel, userName: String, isGuest: Boolean) {
 }
 
 @Composable
+private fun ActivityCard(
+    modifier: Modifier = Modifier,
+    value: String,
+    label: String
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = value,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF2E7D32)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+            )
+        }
+    }
+}
+
+@Composable
 private fun TodayCard(
     modifier: Modifier = Modifier,
-    emoji: String,
     title: String,
     status: String,
     statusColor: Color
@@ -169,8 +231,6 @@ private fun TodayCard(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = emoji, fontSize = 32.sp)
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = title,
                 fontSize = 13.sp,

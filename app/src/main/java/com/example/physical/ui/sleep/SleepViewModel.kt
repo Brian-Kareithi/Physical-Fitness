@@ -11,16 +11,18 @@ import kotlinx.coroutines.launch
 
 data class SleepUiState(
     val isGuest: Boolean = false,
+    val step: Int = 1,
+    val daysPerWeek: Int = 5,
+    val hoursPerDay: Float = 8f,
     val workStartHour: Int = 8,
     val workStartMinute: Int = 0,
-    val workEndHour: Int = 17,
-    val workEndMinute: Int = 0,
-    val suggestedSleepHour: Int = 0,
-    val suggestedSleepMinute: Int = 0,
-    val suggestedWakeHour: Int = 0,
-    val suggestedWakeMinute: Int = 0,
+    val commuteMinutes: Int = 30,
+    val jobTitle: String = "",
+    val suggestedSleepTime: String = "",
+    val suggestedWakeTime: String = "",
     val showSuggestion: Boolean = false,
-    val saved: Boolean = false
+    val saved: Boolean = false,
+    val error: String? = null
 )
 
 class SleepViewModel : ViewModel() {
@@ -33,73 +35,61 @@ class SleepViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(isGuest = isGuest)
     }
 
-    fun updateWorkStart(hour: Int, minute: Int) {
-        _uiState.value = _uiState.value.copy(
-            workStartHour = hour,
-            workStartMinute = minute,
-            showSuggestion = false
-        )
+    fun updateDaysPerWeek(days: Int) {
+        _uiState.value = _uiState.value.copy(daysPerWeek = days)
     }
 
-    fun updateWorkEnd(hour: Int, minute: Int) {
-        _uiState.value = _uiState.value.copy(
-            workEndHour = hour,
-            workEndMinute = minute,
-            showSuggestion = false
-        )
+    fun updateHoursPerDay(hours: Float) {
+        _uiState.value = _uiState.value.copy(hoursPerDay = hours)
     }
 
-    fun calculateSleepSchedule() {
-        val state = _uiState.value
-        val endTotalMinutes = state.workEndHour * 60 + state.workEndMinute
-        val startTotalMinutes = state.workStartHour * 60 + state.workStartMinute
+    fun updateWorkStartHour(hour: Int) {
+        _uiState.value = _uiState.value.copy(workStartHour = hour)
+    }
 
-        var sleepHour: Int
-        var sleepMinute: Int
-        var wakeHour: Int
-        var wakeMinute: Int
+    fun updateWorkStartMinute(minute: Int) {
+        _uiState.value = _uiState.value.copy(workStartMinute = minute)
+    }
 
-        if (endTotalMinutes >= 21 * 60) {
-            sleepHour = state.workEndHour + 1
-            sleepMinute = state.workEndMinute
-            if (sleepHour >= 24) { sleepHour -= 24 }
-            wakeHour = sleepHour + 7
-            wakeMinute = sleepMinute
-            if (wakeHour >= 24) { wakeHour -= 24 }
-        } else if (endTotalMinutes >= 18 * 60) {
-            sleepHour = state.workEndHour + 2
-            sleepMinute = state.workEndMinute
-            if (sleepHour >= 24) { sleepHour -= 24 }
-            wakeHour = 6
-            wakeMinute = 0
-        } else {
-            sleepHour = state.workEndHour + 3
-            sleepMinute = state.workEndMinute
-            if (sleepHour >= 24) { sleepHour -= 24 }
-            val sleepTotal = sleepHour * 60 + sleepMinute
-            val wakeTotal = startTotalMinutes - 60
-            if (wakeTotal < 0) {
-                wakeHour = 5
-                wakeMinute = 0
-            } else {
-                val sleepDuration = wakeTotal - sleepTotal
-                if (sleepDuration in 420..540) {
-                    wakeHour = wakeTotal / 60
-                    wakeMinute = wakeTotal % 60
-                } else {
-                    wakeHour = sleepHour + 8
-                    wakeMinute = sleepMinute
-                    if (wakeHour >= 24) { wakeHour -= 24 }
-                }
-            }
+    fun updateCommute(minutes: Int) {
+        _uiState.value = _uiState.value.copy(commuteMinutes = minutes)
+    }
+
+    fun updateJobTitle(title: String) {
+        _uiState.value = _uiState.value.copy(jobTitle = title)
+    }
+
+    fun nextStep() {
+        val current = _uiState.value.step
+        if (current < 5) {
+            _uiState.value = _uiState.value.copy(step = current + 1)
         }
+    }
+
+    fun previousStep() {
+        val current = _uiState.value.step
+        if (current > 1) {
+            _uiState.value = _uiState.value.copy(step = current - 1)
+        }
+    }
+
+    fun calculate() {
+        val state = _uiState.value
+        val endHour = state.workStartHour + state.hoursPerDay.toInt()
+        val endMinute = state.workStartMinute + ((state.hoursPerDay % 1) * 60).toInt()
+
+        val sleepTimeMinutes = (endHour * 60 + endMinute + state.commuteMinutes + 60) % (24 * 60)
+        val sleepHour = sleepTimeMinutes / 60
+        val sleepMinute = sleepTimeMinutes % 60
+
+        val wakeHour = if (state.workStartHour - 1 < 0) 5 else state.workStartHour - 1
+        val wakeMinute = if (state.workStartHour - 1 < 0) 0 else 0
 
         _uiState.value = _uiState.value.copy(
-            suggestedSleepHour = sleepHour,
-            suggestedSleepMinute = sleepMinute,
-            suggestedWakeHour = wakeHour,
-            suggestedWakeMinute = wakeMinute,
-            showSuggestion = true
+            suggestedSleepTime = String.format("%02d:%02d", sleepHour, sleepMinute),
+            suggestedWakeTime = String.format("%02d:%02d", wakeHour, wakeMinute),
+            showSuggestion = true,
+            step = 6
         )
     }
 
@@ -108,23 +98,17 @@ class SleepViewModel : ViewModel() {
             _uiState.value = _uiState.value.copy(saved = true)
             return
         }
+        _uiState.value = _uiState.value.copy(saved = true)
+    }
 
-        val state = _uiState.value
-        val schedule = SleepSchedule(
-            workStartHour = state.workStartHour,
-            workStartMinute = state.workStartMinute,
-            workEndHour = state.workEndHour,
-            workEndMinute = state.workEndMinute,
-            suggestedSleepHour = state.suggestedSleepHour,
-            suggestedSleepMinute = state.suggestedSleepMinute,
-            suggestedWakeHour = state.suggestedWakeHour,
-            suggestedWakeMinute = state.suggestedWakeMinute,
-            consistencyScore = 100
-        )
-
-        viewModelScope.launch {
-            repository.saveSleepSchedule(schedule)
-            _uiState.value = _uiState.value.copy(saved = true)
+    fun commuteJoke(): String? {
+        val min = _uiState.value.commuteMinutes
+        return when {
+            min >= 180 -> "Three hours?! You could fly to another country in that time. Hope you're catching up on some serious podcasts!"
+            min >= 120 -> "Two hours each way? That's a part-time job just sitting in traffic. Maybe time to negotiate that remote work!"
+            min >= 90 -> "An hour and a half? You could watch an entire movie. Hope your car has comfortable seats!"
+            min >= 60 -> "An hour each way? Ouch. On the bright side, you can learn a new language with all that time."
+            else -> null
         }
     }
 }
